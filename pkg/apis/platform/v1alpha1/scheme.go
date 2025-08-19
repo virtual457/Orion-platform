@@ -1,9 +1,10 @@
 // pkg/apis/platform/v1alpha1/scheme.go
-// Registers our custom types with Kubernetes
+// Fixed Kubernetes scheme registration
 
 package v1alpha1
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -25,5 +26,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&Application{},
 		&ApplicationList{},
 	)
+	metav1.AddToGroupVersion(scheme, GroupVersion)
 	return nil
 }

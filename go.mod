@@ -1,6 +1,6 @@
 module github.com/virtual457/orion-platform
 
-go 1.25.0
+go 1.21
 
 require (
 	k8s.io/api v0.28.4

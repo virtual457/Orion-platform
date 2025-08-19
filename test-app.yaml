@@ -1,0 +1,14 @@
+﻿apiVersion: platform.orion.dev/v1alpha1
+kind: Application
+metadata:
+  name: test-nginx
+  namespace: applications
+spec:
+  image: nginx:latest
+  port: 80
+  replicas: 1
+  infrastructure:
+    environment: local
+    postgresql:
+      version: "14.9"
+      databaseName: webapp

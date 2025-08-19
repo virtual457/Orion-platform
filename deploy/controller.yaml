@@ -1,0 +1,113 @@
+# deploy/controller.yaml
+# Deploys the Orion Platform controller to Kubernetes
+
+---
+# Service Account for the controller
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: orion-controller
+  namespace: orion-system
+
+---
+# RBAC - ClusterRole (permissions)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: orion-controller-role
+rules:
+# Application resources (our CRDs)
+- apiGroups: ["platform.orion.dev"]
+  resources: ["applications"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["platform.orion.dev"]
+  resources: ["applications/status"]
+  verbs: ["get", "update", "patch"]
+
+# Kubernetes core resources
+- apiGroups: [""]
+  resources: ["pods", "services", "persistentvolumeclaims", "secrets", "configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Apps resources
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "replicasets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Events (for logging)
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+---
+# RBAC - ClusterRoleBinding (assign permissions)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: orion-controller-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: orion-controller-role
+subjects:
+- kind: ServiceAccount
+  name: orion-controller
+  namespace: orion-system
+
+---
+# Controller Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orion-controller
+  namespace: orion-system
+  labels:
+    app: orion-controller
+    version: v0.3.0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orion-controller
+  template:
+    metadata:
+      labels:
+        app: orion-controller
+    spec:
+      serviceAccountName: orion-controller
+      containers:
+      - name: controller
+        image: orion-platform:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: ORION_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
+        - containerPort: 8081
+          name: health
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: health
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: health
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      terminationGracePeriodSeconds: 10

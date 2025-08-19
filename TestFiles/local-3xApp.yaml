@@ -1,0 +1,16 @@
+
+# simple-nginx-test.yaml
+# Test application with 3 nginx replicas and no infrastructure
+
+apiVersion: platform.orion.dev/v1alpha1
+kind: Application
+metadata:
+  name: simple-nginx
+  namespace: applications
+spec:
+  image: nginx:latest
+  port: 80
+  replicas: 3
+  env:
+    ENV: test
+    LOG_LEVEL: info

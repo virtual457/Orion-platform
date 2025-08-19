@@ -1,0 +1,142 @@
+# config/crd/application-crd.yaml
+# Custom Resource Definition for Application
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: applications.platform.orion.dev
+spec:
+  group: platform.orion.dev
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              image:
+                type: string
+                description: Container image to deploy
+              port:
+                type: integer
+                format: int32
+                minimum: 1
+                maximum: 65535
+                description: Port to expose
+              replicas:
+                type: integer
+                format: int32
+                minimum: 0
+                description: Number of replicas
+              env:
+                type: object
+                additionalProperties:
+                  type: string
+                description: Environment variables
+              infrastructure:
+                type: object
+                properties:
+                  environment:
+                    type: string
+                    enum: ["local", "aws", "auto"]
+                    description: Infrastructure environment
+                  postgresql:
+                    type: object
+                    properties:
+                      environment:
+                        type: string
+                        enum: ["local", "aws", "auto"]
+                      version:
+                        type: string
+                      instanceType:
+                        type: string
+                      storage:
+                        type: integer
+                        format: int32
+                      databaseName:
+                        type: string
+                      localStorage:
+                        type: string
+                  redis:
+                    type: object
+                    properties:
+                      environment:
+                        type: string
+                        enum: ["local", "aws", "auto"]
+                      version:
+                        type: string
+                      nodeType:
+                        type: string
+                      memory:
+                        type: string
+                  s3:
+                    type: object
+                    properties:
+                      environment:
+                        type: string
+                        enum: ["local", "aws", "auto"]
+                      bucketName:
+                        type: string
+                      versioning:
+                        type: boolean
+                      localStorage:
+                        type: string
+            required:
+            - image
+          status:
+            type: object
+            properties:
+              phase:
+                type: string
+                enum: ["Pending", "ProvisioningInfrastructure", "Deploying", "Ready", "Failed"]
+              message:
+                type: string
+              readyReplicas:
+                type: integer
+                format: int32
+              lastUpdated:
+                type: string
+                format: date-time
+              infrastructureReady:
+                type: boolean
+              databaseEndpoint:
+                type: string
+              databaseEnvironment:
+                type: string
+              redisEndpoint:
+                type: string
+              redisEnvironment:
+                type: string
+              s3BucketName:
+                type: string
+              s3Endpoint:
+                type: string
+              s3Environment:
+                type: string
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Phase
+      type: string
+      jsonPath: .status.phase
+    - name: Ready
+      type: integer
+      jsonPath: .status.readyReplicas
+    - name: Image
+      type: string
+      jsonPath: .spec.image
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp
+  scope: Namespaced
+  names:
+    plural: applications
+    singular: application
+    kind: Application
+    shortNames:
+    - app
+    - apps

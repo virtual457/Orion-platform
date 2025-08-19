@@ -1,4 +1,6 @@
 // pkg/apis/platform/v1alpha1/types.go
+// Fully Kubernetes-compatible types
+
 package v1alpha1
 
 import (
@@ -7,6 +9,16 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+)
+
+// Environment types
+type Environment string
+
+const (
+	EnvironmentLocal Environment = "local"
+	EnvironmentAWS   Environment = "aws"
+	EnvironmentAuto  Environment = "auto"
 )
 
 // ApplicationSpec defines what the developer wants to deploy
@@ -20,26 +32,33 @@ type ApplicationSpec struct {
 
 // InfrastructureSpec defines external AWS resources needed
 type InfrastructureSpec struct {
-	PostgreSQL *PostgreSQLSpec `json:"postgresql,omitempty"`
-	Redis      *RedisSpec      `json:"redis,omitempty"`
-	S3         *S3Spec         `json:"s3,omitempty"`
+	Environment Environment     `json:"environment,omitempty"`
+	PostgreSQL  *PostgreSQLSpec `json:"postgresql,omitempty"`
+	Redis       *RedisSpec      `json:"redis,omitempty"`
+	S3          *S3Spec         `json:"s3,omitempty"`
 }
 
 type PostgreSQLSpec struct {
-	Version      string `json:"version,omitempty"`
-	InstanceType string `json:"instanceType,omitempty"`
-	Storage      int32  `json:"storage,omitempty"`
-	DatabaseName string `json:"databaseName,omitempty"`
+	Environment  Environment `json:"environment,omitempty"`
+	Version      string      `json:"version,omitempty"`
+	InstanceType string      `json:"instanceType,omitempty"`
+	Storage      int32       `json:"storage,omitempty"`
+	DatabaseName string      `json:"databaseName,omitempty"`
+	LocalStorage string      `json:"localStorage,omitempty"`
 }
 
 type RedisSpec struct {
-	Version  string `json:"version,omitempty"`
-	NodeType string `json:"nodeType,omitempty"`
+	Environment Environment `json:"environment,omitempty"`
+	Version     string      `json:"version,omitempty"`
+	NodeType    string      `json:"nodeType,omitempty"`
+	Memory      string      `json:"memory,omitempty"`
 }
 
 type S3Spec struct {
-	BucketName string `json:"bucketName,omitempty"`
-	Versioning bool   `json:"versioning,omitempty"`
+	Environment  Environment `json:"environment,omitempty"`
+	BucketName   string      `json:"bucketName,omitempty"`
+	Versioning   bool        `json:"versioning,omitempty"`
+	LocalStorage string      `json:"localStorage,omitempty"`
 }
 
 // ApplicationStatus shows current state
@@ -47,11 +66,15 @@ type ApplicationStatus struct {
 	Phase               ApplicationPhase `json:"phase,omitempty"`
 	Message             string           `json:"message,omitempty"`
 	ReadyReplicas       int32            `json:"readyReplicas,omitempty"`
-	LastUpdated         time.Time        `json:"lastUpdated,omitempty"`
+	LastUpdated         metav1.Time      `json:"lastUpdated,omitempty"`
 	InfrastructureReady bool             `json:"infrastructureReady,omitempty"`
 	DatabaseEndpoint    string           `json:"databaseEndpoint,omitempty"`
+	DatabaseEnvironment Environment      `json:"databaseEnvironment,omitempty"`
 	RedisEndpoint       string           `json:"redisEndpoint,omitempty"`
+	RedisEnvironment    Environment      `json:"redisEnvironment,omitempty"`
 	S3BucketName        string           `json:"s3BucketName,omitempty"`
+	S3Endpoint          string           `json:"s3Endpoint,omitempty"`
+	S3Environment       Environment      `json:"s3Environment,omitempty"`
 }
 
 type ApplicationPhase string
@@ -66,11 +89,12 @@ const (
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Namespaced,shortName=app
 // Application is our main Custom Resource
 type Application struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	
+
 	Spec   ApplicationSpec   `json:"spec,omitempty"`
 	Status ApplicationStatus `json:"status,omitempty"`
 }
@@ -83,7 +107,17 @@ type ApplicationList struct {
 	Items           []Application `json:"items"`
 }
 
-// DeepCopyObject implements runtime.Object interface for Application
+// GetObjectKind implements runtime.Object interface
+func (app *Application) GetObjectKind() schema.ObjectKind {
+	return &app.TypeMeta
+}
+
+// GetObjectKind implements runtime.Object interface  
+func (appList *ApplicationList) GetObjectKind() schema.ObjectKind {
+	return &appList.TypeMeta
+}
+
+// DeepCopyObject implements runtime.Object interface
 func (app *Application) DeepCopyObject() runtime.Object {
 	if c := app.DeepCopy(); c != nil {
 		return c
@@ -91,7 +125,7 @@ func (app *Application) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-// DeepCopyObject implements runtime.Object interface for ApplicationList
+// DeepCopyObject implements runtime.Object interface
 func (appList *ApplicationList) DeepCopyObject() runtime.Object {
 	if c := appList.DeepCopy(); c != nil {
 		return c
@@ -180,11 +214,11 @@ func (status *ApplicationStatus) DeepCopyInto(out *ApplicationStatus) {
 	*out = *status
 }
 
-// Business logic methods
+// Business logic methods with Kubernetes-compatible time handling
 func (app *Application) UpdateStatus(phase ApplicationPhase, message string) {
 	app.Status.Phase = phase
 	app.Status.Message = message
-	app.Status.LastUpdated = time.Now()
+	app.Status.LastUpdated = metav1.NewTime(time.Now())
 }
 
 func (app *Application) IsReady() bool {
@@ -201,6 +235,55 @@ func (app *Application) NeedsCache() bool {
 
 func (app *Application) NeedsStorage() bool {
 	return app.Spec.Infrastructure.S3 != nil
+}
+
+func (app *Application) GetDatabaseEnvironment() Environment {
+	if app.Spec.Infrastructure.PostgreSQL != nil && app.Spec.Infrastructure.PostgreSQL.Environment != "" {
+		return app.Spec.Infrastructure.PostgreSQL.Environment
+	}
+	if app.Spec.Infrastructure.Environment != "" {
+		return app.Spec.Infrastructure.Environment
+	}
+	return EnvironmentAuto
+}
+
+func (app *Application) GetRedisEnvironment() Environment {
+	if app.Spec.Infrastructure.Redis != nil && app.Spec.Infrastructure.Redis.Environment != "" {
+		return app.Spec.Infrastructure.Redis.Environment
+	}
+	if app.Spec.Infrastructure.Environment != "" {
+		return app.Spec.Infrastructure.Environment
+	}
+	return EnvironmentAuto
+}
+
+func (app *Application) GetS3Environment() Environment {
+	if app.Spec.Infrastructure.S3 != nil && app.Spec.Infrastructure.S3.Environment != "" {
+		return app.Spec.Infrastructure.S3.Environment
+	}
+	if app.Spec.Infrastructure.Environment != "" {
+		return app.Spec.Infrastructure.Environment
+	}
+	return EnvironmentAuto
+}
+
+func (app *Application) IsLocalDatabase() bool {
+	env := app.GetDatabaseEnvironment()
+	return env == EnvironmentLocal || (env == EnvironmentAuto && app.isLocalEnvironment())
+}
+
+func (app *Application) IsLocalRedis() bool {
+	env := app.GetRedisEnvironment()
+	return env == EnvironmentLocal || (env == EnvironmentAuto && app.isLocalEnvironment())
+}
+
+func (app *Application) IsLocalS3() bool {
+	env := app.GetS3Environment()
+	return env == EnvironmentLocal || (env == EnvironmentAuto && app.isLocalEnvironment())
+}
+
+func (app *Application) isLocalEnvironment() bool {
+	return true // For now, default to local
 }
 
 func (app *Application) ValidateSpec() error {
@@ -232,17 +315,36 @@ func (app *Application) GetPort() int32 {
 
 func (app *Application) GetInfrastructureSummary() string {
 	var components []string
+	
 	if app.NeedsDatabase() {
-		components = append(components, "PostgreSQL")
+		env := app.GetDatabaseEnvironment()
+		if app.IsLocalDatabase() {
+			components = append(components, fmt.Sprintf("PostgreSQL (local:%s)", env))
+		} else {
+			components = append(components, fmt.Sprintf("PostgreSQL (AWS:%s)", env))
+		}
 	}
+	
 	if app.NeedsCache() {
-		components = append(components, "Redis")
+		env := app.GetRedisEnvironment()
+		if app.IsLocalRedis() {
+			components = append(components, fmt.Sprintf("Redis (local:%s)", env))
+		} else {
+			components = append(components, fmt.Sprintf("Redis (AWS:%s)", env))
+		}
 	}
+	
 	if app.NeedsStorage() {
-		components = append(components, "S3")
+		env := app.GetS3Environment()
+		if app.IsLocalS3() {
+			components = append(components, fmt.Sprintf("S3/MinIO (local:%s)", env))
+		} else {
+			components = append(components, fmt.Sprintf("S3 (AWS:%s)", env))
+		}
 	}
+	
 	if len(components) == 0 {
 		return "No external infrastructure"
 	}
-	return fmt.Sprintf("Needs: %v", components)
+	return fmt.Sprintf("Infrastructure: %v", components)
 }
