@@ -1,4 +1,11 @@
 <!-- PROJECT SHIELDS -->
+<!-- *** I'm using markdown "reference style" links for readability. *** Reference links are enclosed in brackets [ ] instead of parentheses ( ). *** See the bottom of this document for the declaration of the reference variables *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use. *** https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
+
 <a id="readme-top"></a>
 
 <!-- PROJECT TITLE -->
@@ -9,6 +16,8 @@
     <br/>
     <a href="https://github.com/virtual457/Orion-platform"><strong>Explore the docs »</strong></a>
     <br/><br/>
+    <a href="https://github.com/virtual457/Orion-platform">View Demo</a>
+    ·
     <a href="https://github.com/virtual457/Orion-platform/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
     <a href="https://github.com/virtual457/Orion-platform/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
@@ -25,6 +34,8 @@ Orion Platform is a Kubernetes operator and set of resources that streamline the
 - Status reporting, health checks, and lifecycle management
 
 This project focuses on clarity, reliability, and an approachable developer experience for platform engineering.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Key Features
 
@@ -51,6 +62,8 @@ Developer YAML → Kubernetes API → Orion Controller → Infrastructure Creati
 - Custom Resource: `Application` (image, replicas, infra requirements)
 - Controller: Reconciles desired state, provisions infra, deploys app
 - Infrastructure Layer: Local (containers) and cloud‑ready integration points
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Getting Started
 
@@ -93,7 +106,9 @@ spec:
 - [x] Local infra provisioning (PostgreSQL/Redis/MinIO)
 - [ ] Cloud integrations (RDS/ElastiCache/S3)
 - [ ] Observability (metrics/dashboards)
-- [ ] CI/CD and testing
+  - [ ] CI/CD and testing
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Built With
 
@@ -105,12 +120,31 @@ spec:
 
 Contributions are welcome! Please open an issue to discuss changes or submit a PR following conventional guidelines.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for details.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Contact
 
 Chandan Gowda K S – gowdakeelarashivan.c@northeastern.edu
 
 Project Link: https://github.com/virtual457/Orion-platform
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/virtual457/Orion-platform.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/virtual457/Orion-platform.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/virtual457/Orion-platform.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/virtual457/Orion-platform.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/virtual457/Orion-platform.svg?style=for-the-badge
+[contributors-url]: https://github.com/virtual457/Orion-platform/graphs/contributors
+[forks-url]: https://github.com/virtual457/Orion-platform/network/members
+[stars-url]: https://github.com/virtual457/Orion-platform/stargazers
+[issues-url]: https://github.com/virtual457/Orion-platform/issues
+[license-url]: https://github.com/virtual457/Orion-platform/blob/master/LICENSE
