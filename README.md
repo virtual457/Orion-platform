@@ -130,7 +130,7 @@ Distributed under the MIT License. See `LICENSE` for details.
 
 ## Contact
 
-Chandan Gowda K S – gowdakeelarashivan.c@northeastern.edu
+Chandan Gowda K S – chandan.keelara@gmail.com
 
 Project Link: https://github.com/virtual457/Orion-platform
 
