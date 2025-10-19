@@ -10,9 +10,11 @@
 
 <!-- PROJECT TITLE -->
 <div align="center">
-  <h3 align="center">🚀 Orion Platform</h3>
+  <h3 align="center">🚀 Orion Platform - KUBERNETES OPERATOR PROJECT ⭐</h3>
   <p align="center">
-    A cloud‑native developer platform built with Go and Kubernetes. Declaratively deploy full‑stack applications with one YAML while the operator provisions the right infrastructure for each environment.
+    <strong>🎯 PORTFOLIO SHOWCASE:</strong> A cloud‑native developer platform built with Go and Kubernetes. Declaratively deploy full‑stack applications with one YAML while the operator provisions the right infrastructure for each environment.
+    <br/>
+    <em>Last Updated: 2025-01-19 | Advanced DevOps & Kubernetes Project</em>
     <br/>
     <a href="https://github.com/virtual457/Orion-platform"><strong>Explore the docs »</strong></a>
     <br/><br/>
