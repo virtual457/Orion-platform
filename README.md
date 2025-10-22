@@ -10,7 +10,7 @@
 
 <!-- PROJECT TITLE -->
 <div align="center">
-  <h3 align="center">🚀 Orion Platform - KUBERNETES OPERATOR PROJECT ⭐</h3>
+  <h3 align="center">🚀 Orion Platform - KUBERNETES OPERATOR PROJECT</h3>
   <p align="center">
     <strong>🎯 PORTFOLIO SHOWCASE:</strong> A cloud‑native developer platform built with Go and Kubernetes. Declaratively deploy full‑stack applications with one YAML while the operator provisions the right infrastructure for each environment.
     <br/>
